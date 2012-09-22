@@ -117,6 +117,12 @@ typedef enum MTMessageType {
 // the delegate of the overlay
 @property (nonatomic, unsafe_unretained) id<MTStatusBarOverlayDelegate> delegate;
 
+// reference to the NavigationBar to use for determining the overlay color on iOS 6
+@property (nonatomic, assign) UINavigationBar *navigationBar;
+// optional overrides for background and text colot on iOS 6
+@property (nonatomic, strong) UIColor *statusBarBackgroundColor;
+@property (nonatomic, strong) UIColor *statusBarTextColor;
+
 
 //===========================================================
 #pragma mark -

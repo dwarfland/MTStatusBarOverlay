@@ -1162,17 +1162,39 @@ kDetailViewWidth, kHistoryTableRowHeight*kMaxHistoryTableRowCount + kStatusBarHe
 #pragma mark Private Methods
 ////////////////////////////////////////////////////////////////////////
 
+- (BOOL)isIOS6
+{
+    int osVersion = [[[[[UIDevice currentDevice] systemVersion] componentsSeparatedByString:@"."] objectAtIndex:0] intValue];
+    return (osVersion >= 6);
+    
+}
+
 - (void)setStatusBarBackgroundForStyle:(UIStatusBarStyle)style {
 	// gray status bar?
 	// on iPad the Default Status Bar Style is black too
 	if (style == UIStatusBarStyleDefault && !IsIPad && !IsIPhoneEmulationMode) {
-		// choose image depending on size
-		if (self.shrinked) {
-			self.statusBarBackgroundImageView.image = [self.defaultStatusBarImageShrinked stretchableImageWithLeftCapWidth:2.0f topCapHeight:0.0f];
-		} else {
-			self.statusBarBackgroundImageView.image = [self.defaultStatusBarImage stretchableImageWithLeftCapWidth:2.0f topCapHeight:0.0f];
-		}
-		statusBarBackgroundImageView_.backgroundColor = [UIColor clearColor];
+        
+        if ([self isIOS6]) {
+            if ([self navigationBar] != 0) {
+                //ToDo: properly determine the right color/gradient based on the navigationBar
+                statusBarBackgroundImageView_.backgroundColor = [[self navigationBar] tintColor];
+                self.statusBarBackgroundImageView.image = nil;
+            }
+            else {
+                statusBarBackgroundImageView_.backgroundColor = [self statusBarBackgroundColor];
+                self.statusBarBackgroundImageView.image = nil;
+            }
+        }
+        else
+        {
+            // choose image depending on size
+            if (self.shrinked) {
+                self.statusBarBackgroundImageView.image = [self.defaultStatusBarImageShrinked stretchableImageWithLeftCapWidth:2.0f topCapHeight:0.0f];
+            } else {
+                self.statusBarBackgroundImageView.image = [self.defaultStatusBarImage stretchableImageWithLeftCapWidth:2.0f topCapHeight:0.0f];
+            }
+            statusBarBackgroundImageView_.backgroundColor = [UIColor clearColor];
+        }
 	}
 	// black status bar? -> no image
 	else {
@@ -1184,7 +1206,7 @@ kDetailViewWidth, kHistoryTableRowHeight*kMaxHistoryTableRowCount + kStatusBarHe
 - (void)setColorSchemeForStatusBarStyle:(UIStatusBarStyle)style messageType:(MTMessageType)messageType {
 	// gray status bar?
 	// on iPad the Default Status Bar Style is black too
-	if (style == UIStatusBarStyleDefault && !IsIPad && !IsIPhoneEmulationMode) {
+	if (style == UIStatusBarStyleDefault && !IsIPad && !IsIPhoneEmulationMode && ![self isIOS6]) {
 		// set color of labels depending on messageType
         switch(messageType) {
             case MTMessageTypeFinish:
@@ -1226,24 +1248,40 @@ kDetailViewWidth, kHistoryTableRowHeight*kMaxHistoryTableRowCount + kStatusBarHe
         
         self.progressView.backgroundColor = [UIColor clearColor];
         self.progressView.image = [self.defaultStatusBarImageShrinked stretchableImageWithLeftCapWidth:2.0f topCapHeight:0.0f];
-	} else {
-		// set color of labels depending on messageType
-        switch(messageType) {
-            case MTMessageTypeFinish:
-                self.statusLabel1.textColor = kDarkThemeFinishedMessageTextColor;
-                self.statusLabel2.textColor = kDarkThemeFinishedMessageTextColor;
-                self.finishedLabel.textColor = kDarkThemeFinishedMessageTextColor;
-                break;
-            case MTMessageTypeError:
-                self.statusLabel1.textColor = kDarkThemeErrorMessageTextColor;
-                self.statusLabel2.textColor = kDarkThemeErrorMessageTextColor;
-                self.finishedLabel.textColor = kDarkThemeErrorMessageTextColor;
-                break;
-            default:
-                self.statusLabel1.textColor = kDarkThemeTextColor;
-                self.statusLabel2.textColor = kDarkThemeTextColor;
-                self.finishedLabel.textColor = kDarkThemeTextColor;
-                break;
+    } else {
+        
+        if ([self isIOS6]) {
+            
+            if ([self navigationBar] != 0) {
+                //ToDo: properly determine the right color/gradient based on the navigationBar
+                //      and move the code below to "else"
+            }
+            self.statusLabel1.textColor = [self statusBarTextColor];
+            self.statusLabel2.textColor = [self statusBarTextColor];
+            self.finishedLabel.textColor = [self statusBarTextColor];
+            
+        }
+        else {
+
+            // set color of labels depending on messageType
+            switch(messageType) {
+                case MTMessageTypeFinish:
+                    self.statusLabel1.textColor = kDarkThemeFinishedMessageTextColor;
+                    self.statusLabel2.textColor = kDarkThemeFinishedMessageTextColor;
+                    self.finishedLabel.textColor = kDarkThemeFinishedMessageTextColor;
+                    break;
+                case MTMessageTypeError:
+                    self.statusLabel1.textColor = kDarkThemeErrorMessageTextColor;
+                    self.statusLabel2.textColor = kDarkThemeErrorMessageTextColor;
+                    self.finishedLabel.textColor = kDarkThemeErrorMessageTextColor;
+                    break;
+                default:
+                    self.statusLabel1.textColor = kDarkThemeTextColor;
+                    self.statusLabel2.textColor = kDarkThemeTextColor;
+                    self.finishedLabel.textColor = kDarkThemeTextColor;
+                    break;
+            }
+            
         }
         self.statusLabel1.shadowColor = nil;
         self.statusLabel2.shadowColor = nil;
@@ -1254,6 +1292,8 @@ kDetailViewWidth, kHistoryTableRowHeight*kMaxHistoryTableRowCount + kStatusBarHe
         if ([self.activityIndicator respondsToSelector:@selector(setColor:)]) {
             [self.activityIndicator setColor:nil];
         }
+        
+        //ToDo: maybe add iOS6 specific coloring here too (i don't use the detail view myself)
         
 		self.detailView.backgroundColor = kDarkThemeDetailViewBackgroundColor;
 		self.detailView.layer.borderColor = [kDarkThemeDetailViewBorderColor CGColor];
